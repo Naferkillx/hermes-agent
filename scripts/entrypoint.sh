@@ -48,5 +48,10 @@ chmod 600 ~/.hermes/.env
 
 echo "[+] Configuración completada. Iniciando Hermes Gateway..."
 
+# Iniciar un servidor HTTP dummy en segundo plano en el puerto que Render asigna
+# Esto evita que Render falle por el escaneo de puertos y permite mantener el servicio despierto
+echo "[+] Iniciando servidor HTTP dummy en el puerto ${PORT:-8080}..."
+python3 -m http.server ${PORT:-8080} &
+
 # Ejecutar el gateway del agente
 exec hermes gateway run
