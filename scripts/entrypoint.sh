@@ -7,33 +7,31 @@ echo "[+] Iniciando contenedor Docker de Hermes Agent..."
 mkdir -p ~/.hermes
 mkdir -p ~/hermes_workspace
 
-# Generar archivo config.yaml dinámicamente usando Python si no existe
+# Generar archivo config.yaml dinámicamente usando Python
 echo "[+] Configurando archivo config.yaml..."
 python3 -c "
 import os, yaml
 config_path = os.path.expanduser('~/.hermes/config.yaml')
-if not os.path.exists(config_path):
-    config = {
-        'model': {
-            'default': os.environ.get('DEFAULT_MODEL', 'nousresearch/hermes-3-llama-3.1-405b:free'),
-            'provider': os.environ.get('LLM_PROVIDER', 'openrouter'),
-            'base_url': os.environ.get('BASE_URL', 'https://openrouter.ai/v1'),
-            'temperature': float(os.environ.get('MODEL_TEMPERATURE', '0.7'))
-        },
-        'terminal': {
-            'backend': 'local',
-            'workdir': os.path.expanduser('~/hermes_workspace')
-        },
-        'memory': {
-            'memory_enabled': True,
-            'user_profile_enabled': True
-        }
+# Siempre sobreescribimos la configuración para aplicar las variables de entorno de Render
+config = {
+    'model': {
+        'default': os.environ.get('DEFAULT_MODEL', 'nousresearch/hermes-3-llama-3.1-405b:free'),
+        'provider': os.environ.get('LLM_PROVIDER', 'openrouter'),
+        'base_url': os.environ.get('BASE_URL', 'https://openrouter.ai/v1'),
+        'temperature': float(os.environ.get('MODEL_TEMPERATURE', '0.7'))
+    },
+    'terminal': {
+        'backend': 'local',
+        'workdir': os.path.expanduser('~/hermes_workspace')
+    },
+    'memory': {
+        'memory_enabled': True,
+        'user_profile_enabled': True
     }
-    with open(config_path, 'w') as f:
-        yaml.dump(config, f)
-    print('[+] Archivo config.yaml creado exitosamente.')
-else:
-    print('[~] Archivo config.yaml existente detectado. Omitiendo creación.')
+}
+with open(config_path, 'w') as f:
+    yaml.dump(config, f)
+print('[+] Archivo config.yaml configurado exitosamente.')
 "
 
 # Generar archivo .env dinámicamente para las claves y tokens
