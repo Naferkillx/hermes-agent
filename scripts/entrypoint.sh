@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
+
 echo "[+] Iniciando contenedor Docker de Hermes Agent..."
+
 
 # Crear directorios necesarios
 mkdir -p ~/.hermes
 mkdir -p ~/hermes_workspace
+
 
 # Generar archivo config.yaml dinámicamente usando Python
 echo "[+] Configurando archivo config.yaml..."
@@ -15,7 +18,7 @@ config_path = os.path.expanduser('~/.hermes/config.yaml')
 # Siempre sobreescribimos la configuración para aplicar las variables de entorno de Render
 config = {
     'model': {
-        'default': os.environ.get('DEFAULT_MODEL', 'nousresearch/hermes-3-llama-3.1-405b:free'),
+        'default': os.environ.get('DEFAULT_MODEL', 'google/gemma-3-27b-it:free'),
         'provider': os.environ.get('LLM_PROVIDER', 'openrouter'),
         'base_url': os.environ.get('BASE_URL', 'https://openrouter.ai/v1'),
         'temperature': float(os.environ.get('MODEL_TEMPERATURE', '0.7'))
@@ -33,25 +36,3 @@ with open(config_path, 'w') as f:
     yaml.dump(config, f)
 print('[+] Archivo config.yaml configurado exitosamente.')
 "
-
-# Generar archivo .env dinámicamente para las claves y tokens
-echo "[+] Generando archivo de credenciales .env..."
-cat <<EOF > ~/.hermes/.env
-OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-TELEGRAM_USER_ID=${TELEGRAM_USER_ID}
-TELEGRAM_ALLOWED_USERS=${TELEGRAM_USER_ID}
-GATEWAY_ALLOW_ALL_USERS=${GATEWAY_ALLOW_ALL_USERS:-false}
-DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
-EOF
-chmod 600 ~/.hermes/.env
-
-echo "[+] Configuración completada. Iniciando Hermes Gateway..."
-
-# Iniciar un servidor HTTP dummy en segundo plano en el puerto que Render asigna
-# Esto evita que Render falle por el escaneo de puertos y permite mantener el servicio despierto
-echo "[+] Iniciando servidor HTTP dummy en el puerto ${PORT:-8080}..."
-python3 -m http.server ${PORT:-8080} &
-
-# Ejecutar el gateway del agente
-exec hermes gateway run
