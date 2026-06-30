@@ -1,0 +1,36 @@
+[Unit]
+Description=Nous Research Hermes Agent Gateway Service
+After=network.target
+
+[Service]
+Type=simple
+
+# Reemplaza 'ubuntu' por tu nombre de usuario de VPS en caso de ser diferente (ej. 'opc' en Oracle Linux o 'admin')
+User=ubuntu
+Group=ubuntu
+
+# Directorio de trabajo
+WorkingDirectory=/home/ubuntu/hermes_workspace
+
+# Carga la ruta de ejecutables locales en PATH.
+# Por defecto, el instalador de Hermes coloca el binario en ~/.local/bin/
+Environment="PATH=/usr/sbin:/usr/bin:/sbin:/bin:/home/ubuntu/.local/bin"
+Environment="HOME=/home/ubuntu"
+
+# Comando para iniciar la pasarela de mensajería (Telegram/Discord/Slack) en segundo plano
+ExecStart=/home/ubuntu/.local/bin/hermes gateway start
+
+# Política de reinicios automáticos en caso de fallos del servidor o caídas de conexión
+Restart=always
+RestartSec=10
+
+# Configuración de límites de archivos abiertos para evitar cuellos de botella del agente
+LimitNOFILE=65536
+
+# Redirección de logs para visualizarlos con journalctl
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hermes-agent
+
+[Install]
+WantedBy=multi-user.target
